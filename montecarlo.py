@@ -20,6 +20,48 @@ class OpticalElement(object):
         raise NotImplementedError
 
 
+class Detector(object):
+
+    def __init__(self, name, *args, **kwargs):
+        self.name = name
+
+    def detect(self, ray):
+        raise NotImplementedError
+
+    def post_process(self):
+        pass
+
+    def report(self):
+        raise NotImplementedError
+
+
+class Simulation(object):
+
+    def __init__(self, source, setup):
+        self.source = source
+        self.setup = setup
+        self.detectors = [obj for obj in setup if isinstance(obj, Detector)]
+
+    def propagate(self, ray):
+        for obj in self.setup:
+            if isinstance(obj, Detector):
+                obj.detect(ray)
+            elif isinstance(obj, OpticalElement):
+                obj.propagate(ray)
+
+    def report(self):
+        report = {}
+        for d in self.detectors:
+            d.post_process()
+            report[d.name] = d.report()
+        return report
+
+    def run(self):
+        for ray in self.source:
+            self.propagate(ray)
+        return self.report()
+
+
 class Space(OpticalElement):
 
     def __init__(self, distance):
@@ -97,21 +139,6 @@ class RandomSource(Source):
         return self
 
 
-class Detector(object):
-
-    def __init__(self, name, *args, **kwargs):
-        self.name = name
-
-    def detect(self, ray):
-        raise NotImplementedError
-
-    def post_process(self):
-        pass
-
-    def report(self):
-        raise NotImplementedError
-
-
 class PositionHistogram(Detector):
 
     def __init__(self, name, x_bins):
@@ -152,30 +179,3 @@ class PositionAngleHistogram(Detector):
         report['th_bins'] = self.th_bins
         report['bins'] = self.bins
         return report
-
-
-class Simulation(object):
-
-    def __init__(self, source, setup):
-        self.source = source
-        self.setup = setup
-        self.detectors = [obj for obj in setup if isinstance(obj, Detector)]
-
-    def propagate(self, ray):
-        for obj in self.setup:
-            if isinstance(obj, Detector):
-                obj.detect(ray)
-            elif isinstance(obj, OpticalElement):
-                obj.propagate(ray)
-
-    def report(self):
-        report = {}
-        for d in self.detectors:
-            d.post_process()
-            report[d.name] = d.report()
-        return report
-
-    def run(self):
-        for ray in self.source:
-            self.propagate(ray)
-        return self.report()
