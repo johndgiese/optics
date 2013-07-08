@@ -41,22 +41,22 @@ class SpaceProp(unittest.TestCase):
 
         self.assertEqual(sum(bins), self.num_photons)
 
-        energy_below = sum(bins[:(num_bins/4 - 1)])
-        energy_above = sum(bins[-(num_bins/4 - 1):])
-        energy_outside_spread = energy_below + energy_above
+        photons_below = sum(bins[:(num_bins/4 - 1)])
+        photons_above = sum(bins[-(num_bins/4 - 1):])
+        photons_outside_spread = photons_below + photons_above
 
-        self.assertEqual(energy_outside_spread, 0.0)
+        self.assertEqual(photons_outside_spread, 0.0)
 
 
 class Imaging(unittest.TestCase):
     def setUp(self):
         d = 1
         elements = [
-            montecarlo.Space(d),
-            montecarlo.SimpleLens(d),
-            montecarlo.Space(2*d),
-            montecarlo.SimpleLens(d),
-            montecarlo.Space(d),
+            montecarlo.ParaxialSpace(d),
+            montecarlo.ParaxialLens(d),
+            montecarlo.ParaxialSpace(2*d),
+            montecarlo.ParaxialLens(d),
+            montecarlo.ParaxialSpace(d),
         ]
         setup = montecarlo.Setup(elements)
 
@@ -66,7 +66,7 @@ class Imaging(unittest.TestCase):
         x_dist = lambda: 0
         ray_bundle = montecarlo.RayDistribution(num_photons, x_dist, th_dist)
          
-        pos_bin_edges = linspace(-0.3, 0.3, 100)
+        pos_bin_edges = linspace(-0.3, 0.3, 101)
         recorder = montecarlo.PositionAngleHistogram(pos_bin_edges)
         recorders = [recorder]
 
@@ -80,8 +80,9 @@ class Imaging(unittest.TestCase):
         bins = simulation.recorders[0].bins
         num_bins = len(bins)
 
-        imshow(bins)
-        show()
+        central_bin = round(num_bins/2.0)
+        photons_in_central_bin = sum(bins[central_bin, :])
+        self.assertEqual(photons_in_central_bin, self.num_photons)
         
 
 if __name__ == '__main__':

@@ -29,7 +29,16 @@ class Space(OpticalElement):
         ray.x = ray.x + math.tan(ray.th)*self.distance
 
 
-class SimpleLens(OpticalElement):
+class ParaxialSpace(OpticalElement):
+
+    def __init__(self, distance):
+        self.distance = distance
+
+    def propagate(self, ray):
+        ray.x = ray.x + ray.th*self.distance
+
+
+class ParaxialLens(OpticalElement):
 
     def __init__(self, f):
         self.f = f
