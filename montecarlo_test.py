@@ -21,7 +21,7 @@ class SpaceProp(unittest.TestCase):
         num_photons = 1e4
         th_dist = lambda: rand()*th_span - th_span/2.0
         x_dist = lambda: 0
-        ray_bundle = montecarlo.RayDistribution(num_photons, x_dist, th_dist)
+        source = montecarlo.RandomSource(num_photons, x_dist, th_dist)
          
         max_photon_spread = math.tan(th_span/2.0)
         bin_edges = linspace(-2*max_photon_spread, 2*max_photon_spread, 100)
@@ -30,7 +30,7 @@ class SpaceProp(unittest.TestCase):
 
         self.max_photon_spread = max_photon_spread
         self.num_photons = num_photons
-        self.simulation = montecarlo.Simulation(setup, ray_bundle, recorders)
+        self.simulation = montecarlo.Simulation(source, setup, recorders)
 
     def test_simple(self):
         simulation = self.simulation
@@ -64,14 +64,14 @@ class Imaging(unittest.TestCase):
         num_photons = 1e4
         th_dist = lambda: rand()*th_span - th_span/2.0
         x_dist = lambda: 0
-        ray_bundle = montecarlo.RayDistribution(num_photons, x_dist, th_dist)
+        source = montecarlo.RandomSource(num_photons, x_dist, th_dist)
          
         pos_bin_edges = linspace(-0.3, 0.3, 101)
         recorder = montecarlo.PositionAngleHistogram(pos_bin_edges)
         recorders = [recorder]
 
         self.num_photons = num_photons
-        self.simulation = montecarlo.Simulation(setup, ray_bundle, recorders)
+        self.simulation = montecarlo.Simulation(source, setup, recorders)
 
     def test_imaging(self):
         simulation = self.simulation

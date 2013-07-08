@@ -73,13 +73,13 @@ class Setup(object):
             el.propagate(ray)
 
 
-class RayBundle(object):
+class Source(object):
 
     def __iter__(self):
         raise NotImplementedError
 
 
-class RayDistribution(RayBundle):
+class RandomSource(Source):
 
     def __init__(self, num_rays, x_dist, th_dist, a_dist=None):
         self.num_rays = num_rays
@@ -142,9 +142,9 @@ class PositionAngleHistogram(Recorder):
 
 class Simulation(object):
 
-    def __init__(self, setup, ray_bundle, recorders):
+    def __init__(self, source, setup, recorders):
+        self.source = source
         self.setup = setup
-        self.ray_bundle = ray_bundle
         self.recorders = recorders
 
     def record_all(self, ray):
@@ -152,7 +152,7 @@ class Simulation(object):
             r.record(ray)
 
     def run(self):
-        for ray in self.ray_bundle:
+        for ray in self.source:
             self.setup.propagate(ray)
             self.record_all(ray)
                 
