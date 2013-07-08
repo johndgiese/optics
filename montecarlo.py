@@ -3,6 +3,9 @@
 import math
 import numpy as np
 
+import helpers
+reload(helpers)
+
 class Ray(object):
 
     def __init__(self, x, th, a=1):
@@ -103,54 +106,29 @@ class Recorder(object):
 
 class BinPosition(Recorder):
 
-    def __init__(self, bin_edges):
-        self.pos_bin_edges = np.array(bin_edges)
-        self.bins = np.zeros(self.num_pos_bins)
-
-    @property
-    def num_pos_bins(self):
-        return len(self.pos_bin_edges) + 1
+    def __init__(self, x_bins):
+        self.x_bins = np.array(x_bins)
+        self.bins = np.zeros(len(x_bins) + 1)
 
     def record(self, ray):
-        pos_bin = self.num_pos_bins - 1
-        for i, edge in enumerate(self.pos_bin_edges):
-            if ray.x < edge:
-                pos_bin = i
-                break
-        self.bins[pos_bin] += ray.a
+        x_bin = helpers.digitize(ray.x, self.x_bins)
+        self.bins[x_bin] += ray.a
 
 
 class BinPositionAngle(Recorder):
 
-    def __init__(self, pos_bin_edges, ang_bin_edges=100):
-        self.pos_bin_edges = pos_bin_edges
-        if type(ang_bin_edges) == int:
-            ang_bin_edges = np.linspace(-math.pi/2.0, math.pi/2.0, ang_bin_edges)
-        self.ang_bin_edges = ang_bin_edges
-
-        self.bins = np.zeros([self.num_pos_bins, self.num_ang_bins])
-
-    @property
-    def num_pos_bins(self):
-        return len(self.pos_bin_edges) + 1
-
-    @property
-    def num_ang_bins(self):
-        return len(self.ang_bin_edges) + 1
+    def __init__(self, x_bins, th_bins=100):
+        self.x_bins = np.array(x_bins)
+        if type(th_bins) == int:
+            self.th_bins = np.linspace(-math.pi/2.0, math.pi/2.0, th_bins)
+        else:
+            self.th_bins = np.array(th_bins)
+        self.bins = np.zeros([len(self.x_bins) + 1, len(self.th_bins) + 1])
 
     def record(self, ray):
-        # TODO: optimize
-        pos_bin = self.num_pos_bins - 1
-        for i, edge in enumerate(self.pos_bin_edges):
-            if ray.x < edge:
-                pos_bin = i
-                break
-        ang_bin = self.num_pos_bins - 1
-        for i, edge in enumerate(self.ang_bin_edges):
-            if ray.th < edge:
-                ang_bin = i
-                break
-        self.bins[pos_bin, ang_bin] += ray.a
+        x_bin = helpers.digitize(ray.x, self.x_bins)
+        th_bin = helpers.digitize(ray.th, self.th_bins)
+        self.bins[x_bin, th_bin] += ray.a
 
 
 class Simulation(object):
