@@ -104,7 +104,7 @@ class Recorder(object):
         raise NotImplementedError
 
 
-class BinPosition(Recorder):
+class PositionHistogram(Recorder):
 
     def __init__(self, x_bins):
         self.x_bins = np.array(x_bins)
@@ -115,7 +115,7 @@ class BinPosition(Recorder):
         self.bins[x_bin] += ray.a
 
 
-class BinPositionAngle(Recorder):
+class PositionAngleHistogram(Recorder):
 
     def __init__(self, x_bins, th_bins=100):
         self.x_bins = np.array(x_bins)

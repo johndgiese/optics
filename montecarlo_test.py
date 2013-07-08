@@ -25,7 +25,7 @@ class SpaceProp(unittest.TestCase):
          
         max_photon_spread = math.tan(th_span/2.0)
         bin_edges = linspace(-2*max_photon_spread, 2*max_photon_spread, 100)
-        recorder = montecarlo.BinPosition(bin_edges)
+        recorder = montecarlo.PositionHistogram(bin_edges)
         recorders = [recorder]
 
         self.max_photon_spread = max_photon_spread
@@ -67,7 +67,7 @@ class Imaging(unittest.TestCase):
         ray_bundle = montecarlo.RayDistribution(num_photons, x_dist, th_dist)
          
         pos_bin_edges = linspace(-0.3, 0.3, 100)
-        recorder = montecarlo.BinPositionAngle(pos_bin_edges)
+        recorder = montecarlo.PositionAngleHistogram(pos_bin_edges)
         recorders = [recorder]
 
         self.num_photons = num_photons
