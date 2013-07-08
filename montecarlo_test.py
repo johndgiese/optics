@@ -36,13 +36,13 @@ class SpaceProp(unittest.TestCase):
         simulation = self.simulation
         report = simulation.run()
 
-        bins = report['camera']['bins']
-        num_bins = len(bins)
+        data = report['camera']['data']
+        num_bins = len(data)
 
-        self.assertEqual(sum(bins), self.num_photons)
+        self.assertEqual(sum(data), self.num_photons)
 
-        photons_below = sum(bins[:(num_bins/4 - 1)])
-        photons_above = sum(bins[-(num_bins/4 - 1):])
+        photons_below = sum(data[:(num_bins/4 - 1)])
+        photons_above = sum(data[-(num_bins/4 - 1):])
         photons_outside_spread = photons_below + photons_above
 
         self.assertEqual(photons_outside_spread, 0.0)
@@ -80,11 +80,11 @@ class Imaging(unittest.TestCase):
         simulation = self.simulation
         report = simulation.run()
 
-        bins = report['camera']['bins']
-        num_bins = bins.shape[0]
+        data = report['camera']['data']
+        num_bins = data.shape[0]
 
         central_bin = round(num_bins/2.0)
-        photons_in_central_bin = sum(bins[central_bin, :])
+        photons_in_central_bin = sum(data[central_bin, :])
         self.assertEqual(photons_in_central_bin, self.num_photons)
         
 

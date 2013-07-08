@@ -14,6 +14,12 @@ class Ray(object):
         self.a = a
 
 
+class Source(object):
+
+    def __iter__(self):
+        raise NotImplementedError
+
+
 class OpticalElement(object):
 
     def propagate(self, ray):
@@ -105,12 +111,6 @@ class Aperture(OpticalElement):
             ray.a = 0
 
 
-class Source(object):
-
-    def __iter__(self):
-        raise NotImplementedError
-
-
 class RandomSource(Source):
 
     def __init__(self, num_rays, x_dist, th_dist, a_dist=None):
@@ -144,16 +144,16 @@ class PositionHistogram(Detector):
     def __init__(self, name, x_bins):
         self.name = name
         self.x_bins = np.array(x_bins)
-        self.bins = np.zeros(len(self.x_bins) + 1)
+        self.data = np.zeros(len(self.x_bins) + 1)
 
     def detect(self, ray):
         x_bin = helpers.digitize(ray.x, self.x_bins)
-        self.bins[x_bin] += ray.a
+        self.data[x_bin] += ray.a
 
     def report(self):
         report = {}
         report['x_bins'] = self.x_bins
-        report['bins'] = self.bins
+        report['data'] = self.data
         return report
 
 
@@ -166,16 +166,16 @@ class PositionAngleHistogram(Detector):
             self.th_bins = np.linspace(-math.pi/2.0, math.pi/2.0, th_bins)
         else:
             self.th_bins = np.array(th_bins)
-        self.bins = np.zeros([len(self.x_bins) + 1, len(self.th_bins) + 1])
+        self.data= np.zeros([len(self.x_bins) + 1, len(self.th_bins) + 1])
 
     def detect(self, ray):
         x_bin = helpers.digitize(ray.x, self.x_bins)
         th_bin = helpers.digitize(ray.th, self.th_bins)
-        self.bins[x_bin, th_bin] += ray.a
+        self.data[x_bin, th_bin] += ray.a
 
     def report(self):
         report = {}
         report['x_bins'] = self.x_bins
         report['th_bins'] = self.th_bins
-        report['bins'] = self.bins
+        report['data'] = self.data
         return report
