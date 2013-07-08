@@ -13,10 +13,6 @@ class SpaceProp(unittest.TestCase):
     """
 
     def setUp(self):
-        d = 1
-        elements = [montecarlo.Space(d)]
-        setup = montecarlo.Setup(elements)
-
         th_span = math.pi*0.1
         num_photons = 1e4
         th_dist = lambda: rand()*th_span - th_span/2.0
@@ -25,18 +21,22 @@ class SpaceProp(unittest.TestCase):
          
         max_photon_spread = math.tan(th_span/2.0)
         bin_edges = linspace(-2*max_photon_spread, 2*max_photon_spread, 100)
-        recorder = montecarlo.PositionHistogram(bin_edges)
-        recorders = [recorder]
+        
+        d = 1
+        setup = [
+            montecarlo.Space(d),
+            montecarlo.PositionHistogram('camera', bin_edges),
+        ]
 
         self.max_photon_spread = max_photon_spread
         self.num_photons = num_photons
-        self.simulation = montecarlo.Simulation(source, setup, recorders)
+        self.simulation = montecarlo.Simulation(source, setup)
 
     def test_simple(self):
         simulation = self.simulation
-        simulation.run()
+        report = simulation.run()
 
-        bins = simulation.recorders[0].bins
+        bins = report['camera']['bins']
         num_bins = len(bins)
 
         self.assertEqual(sum(bins), self.num_photons)
@@ -54,14 +54,6 @@ class Imaging(unittest.TestCase):
     """
 
     def setUp(self):
-        d = 1
-        setup = montecarlo.Setup([
-            montecarlo.ParaxialSpace(d),
-            montecarlo.ParaxialLens(d),
-            montecarlo.ParaxialSpace(2*d),
-            montecarlo.ParaxialLens(d),
-            montecarlo.ParaxialSpace(d),
-        ])
 
         th_span = math.pi*0.5
         num_photons = 1e4
@@ -69,19 +61,27 @@ class Imaging(unittest.TestCase):
         x_dist = lambda: 0
         source = montecarlo.RandomSource(num_photons, x_dist, th_dist)
          
-        pos_bin_edges = linspace(-0.3, 0.3, 101)
-        recorder = montecarlo.PositionAngleHistogram(pos_bin_edges)
-        recorders = [recorder]
+        x_bins = linspace(-0.3, 0.3, 101)
+        d = 1
+
+        setup = [
+            montecarlo.ParaxialSpace(d),
+            montecarlo.ParaxialLens(d),
+            montecarlo.ParaxialSpace(2*d),
+            montecarlo.ParaxialLens(d),
+            montecarlo.ParaxialSpace(d),
+            montecarlo.PositionAngleHistogram('camera', x_bins)
+        ]
 
         self.num_photons = num_photons
-        self.simulation = montecarlo.Simulation(source, setup, recorders)
+        self.simulation = montecarlo.Simulation(source, setup)
 
     def test_imaging(self):
         simulation = self.simulation
-        simulation.run()
+        report = simulation.run()
 
-        bins = simulation.recorders[0].bins
-        num_bins = len(bins)
+        bins = report['camera']['bins']
+        num_bins = bins.shape[0]
 
         central_bin = round(num_bins/2.0)
         photons_in_central_bin = sum(bins[central_bin, :])

@@ -63,16 +63,6 @@ class Aperture(OpticalElement):
             ray.a = 0
 
 
-class Setup(object):
-
-    def __init__(self, elements):
-        self.elements = elements
-
-    def propagate(self, ray):
-        for el in self.elements:
-            el.propagate(ray)
-
-
 class Source(object):
 
     def __iter__(self):
@@ -107,26 +97,43 @@ class RandomSource(Source):
         return self
 
 
-class Recorder(object):
+class Detector(object):
 
-    def record(self, ray):
+    def __init__(self, name, *args, **kwargs):
+        self.name = name
+
+    def detect(self, ray):
+        raise NotImplementedError
+
+    def post_process(self):
+        pass
+
+    def report(self):
         raise NotImplementedError
 
 
-class PositionHistogram(Recorder):
+class PositionHistogram(Detector):
 
-    def __init__(self, x_bins):
+    def __init__(self, name, x_bins):
+        self.name = name
         self.x_bins = np.array(x_bins)
-        self.bins = np.zeros(len(x_bins) + 1)
+        self.bins = np.zeros(len(self.x_bins) + 1)
 
-    def record(self, ray):
+    def detect(self, ray):
         x_bin = helpers.digitize(ray.x, self.x_bins)
         self.bins[x_bin] += ray.a
 
+    def report(self):
+        report = {}
+        report['x_bins'] = self.x_bins
+        report['bins'] = self.bins
+        return report
 
-class PositionAngleHistogram(Recorder):
 
-    def __init__(self, x_bins, th_bins=100):
+class PositionAngleHistogram(Detector):
+
+    def __init__(self, name, x_bins, th_bins=100):
+        self.name = name
         self.x_bins = np.array(x_bins)
         if type(th_bins) == int:
             self.th_bins = np.linspace(-math.pi/2.0, math.pi/2.0, th_bins)
@@ -134,25 +141,41 @@ class PositionAngleHistogram(Recorder):
             self.th_bins = np.array(th_bins)
         self.bins = np.zeros([len(self.x_bins) + 1, len(self.th_bins) + 1])
 
-    def record(self, ray):
+    def detect(self, ray):
         x_bin = helpers.digitize(ray.x, self.x_bins)
         th_bin = helpers.digitize(ray.th, self.th_bins)
         self.bins[x_bin, th_bin] += ray.a
 
+    def report(self):
+        report = {}
+        report['x_bins'] = self.x_bins
+        report['th_bins'] = self.th_bins
+        report['bins'] = self.bins
+        return report
+
 
 class Simulation(object):
 
-    def __init__(self, source, setup, recorders):
+    def __init__(self, source, setup):
         self.source = source
         self.setup = setup
-        self.recorders = recorders
+        self.detectors = [obj for obj in setup if isinstance(obj, Detector)]
 
-    def record_all(self, ray):
-        for r in self.recorders:
-            r.record(ray)
+    def propagate(self, ray):
+        for obj in self.setup:
+            if isinstance(obj, Detector):
+                obj.detect(ray)
+            elif isinstance(obj, OpticalElement):
+                obj.propagate(ray)
+
+    def report(self):
+        report = {}
+        for d in self.detectors:
+            d.post_process()
+            report[d.name] = d.report()
+        return report
 
     def run(self):
         for ray in self.source:
-            self.setup.propagate(ray)
-            self.record_all(ray)
-                
+            self.propagate(ray)
+        return self.report()
