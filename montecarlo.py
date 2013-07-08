@@ -55,16 +55,20 @@ class Simulation(object):
             elif isinstance(obj, OpticalElement):
                 obj.propagate(ray)
 
+    def post_process(self):
+        for d in self.detectors:
+            d.post_process()
+
     def report(self):
         report = {}
         for d in self.detectors:
-            d.post_process()
             report[d.name] = d.report()
         return report
 
     def run(self):
         for ray in self.source:
             self.propagate(ray)
+        self.post_process()
         return self.report()
 
 
