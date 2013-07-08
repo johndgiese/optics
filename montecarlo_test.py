@@ -49,16 +49,19 @@ class SpaceProp(unittest.TestCase):
 
 
 class Imaging(unittest.TestCase):
+    """
+    Test a simple paraxial 4-f imaging setup.
+    """
+
     def setUp(self):
         d = 1
-        elements = [
+        setup = montecarlo.Setup([
             montecarlo.ParaxialSpace(d),
             montecarlo.ParaxialLens(d),
             montecarlo.ParaxialSpace(2*d),
             montecarlo.ParaxialLens(d),
             montecarlo.ParaxialSpace(d),
-        ]
-        setup = montecarlo.Setup(elements)
+        ])
 
         th_span = math.pi*0.5
         num_photons = 1e4
