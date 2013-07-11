@@ -8,9 +8,10 @@ reload(helpers)
 
 class Ray(object):
 
-    def __init__(self, x, th, a=1):
+    def __init__(self, x, th, z=0, a=1):
         self.x = x
         self.th = th
+        self.z = z
         self.a = a
 
 
@@ -79,12 +80,14 @@ class Space(OpticalElement):
 
     def propagate(self, ray):
         ray.x = ray.x + math.tan(ray.th)*self.distance
+        ray.z += self.distance
 
 
 class ParaxialSpace(OpticalElement):
 
     def __init__(self, distance):
         self.distance = distance
+        ray.z += self.distance
 
     def propagate(self, ray):
         ray.x = ray.x + ray.th*self.distance
@@ -117,10 +120,14 @@ class Aperture(OpticalElement):
 
 class RandomSource(Source):
 
-    def __init__(self, num_rays, x_dist, th_dist, a_dist=None):
+    def __init__(self, num_rays, x_dist, th_dist, z_dist=None, a_dist=None):
         self.num_rays = num_rays
         self.x_dist = x_dist
         self.th_dist = th_dist
+        if z_dist:
+            self.z_dist = z_dist
+        else:
+            self.z_dist = lambda: 0
         if a_dist:
             self.a_dist = a_dist
         else:
