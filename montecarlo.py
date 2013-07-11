@@ -92,6 +92,26 @@ class ParaxialSpace(OpticalElement):
     def propagate(self, ray):
         ray.x = ray.x + ray.th*self.distance
 
+class Trace(Ray):
+    """Ray that keeps a record of how it propagates."""
+
+    def __init__(self, *args, **kwargs):
+        self.__dict__['locations'] = []
+        super(self, Trace).__init__(*args, **kwargs)
+
+    def __setattr__(self, name, value):
+        self.__dict__[name] = value
+        try:
+            current = (self.x, self.z)
+        except:
+            current = None
+        try:
+            previous = self.locations[-1]
+        except:
+            previous = None
+        if previous and current and not previous == current:
+            self.locations.append(current_loc)
+
 
 class ParaxialLens(OpticalElement):
 
