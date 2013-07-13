@@ -9,7 +9,7 @@ def rotate(x, y, theta):
     y_new = x*np.sin(theta) + y*np.cos(theta)
     return x_new, y_new
 
-def to_ray_coordinates(ray, x, y):
+def ray_coordinates(ray, x, y):
     """
     Convert from standard coordinate system, to coordinate system where
     the ray position defines the origin and the ray-direction defines the
@@ -17,10 +17,11 @@ def to_ray_coordinates(ray, x, y):
     """
     return rotate(x - ray.x, y, ray.th)
 
-def to_standard_coordinates(ray, x, y):
+def standard_coordinates(ray, x, y):
     """
     Convert from ray coordinate system where
     the ray position defines the origin and the ray-direction defines the
     y-axis, back to the standard coordinate system.
     """
-    return rotate(x + ray.x, y, -ray.th)
+    x_new, y_new = rotate(x, y, -ray.th)
+    return x_new + ray.x, y_new

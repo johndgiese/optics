@@ -1,5 +1,7 @@
+from math import sqrt, cos, sin, tan, acos, asin, atan, pi
+
 from base import OpticalElement
-import util
+from util import ray_coordinates, standard_coordinates
 
 class PartionedApertureLens(OpticalElement):
 
@@ -15,7 +17,7 @@ class PartionedApertureLens(OpticalElement):
         ray.th = ray.th - x_effective/self.f
 
 
-class DielectricSphere(OpticalElement):
+class Bead(OpticalElement):
 
     def __init__(self, radius, center, n_sphere, n_surround=1.0):
         self.radius = radius
@@ -25,19 +27,36 @@ class DielectricSphere(OpticalElement):
         self.dz = 2*radius
 
     def intersect_sphere(self, ray):
-        x = self.center
-        z = self.radius
-        x_r, z_r = util.to_ray_coordinates(ray, x, z)
-        return abs(x_r) < self.radius
+        x_sphere = self.center
+        z_sphere = self.radius
+        x_sphere_r, z_sphere_r = ray_coordinates(ray, x_sphere, z_sphere)
+        return abs(x_sphere_r) < self.radius
 
     def enter_sphere(self, ray):
         radius = self.radius
-        x = self.center
-        z = self.radius
-        x_r, z_r = util.to_ray_coordinates(ray, x, z)
-        sphere_thickness_at_intersect = sqrt(radius**2 - x_r**2)
-        xi_r = 0 # by definition
-        zi_r = z_r - sphere_thickness_at_intersect
+        
+        # calculate sphere center in ray-coordinates
+        x_sphere = self.center
+        z_sphere = self.radius
+        x_sphere_r, z_sphere_r = ray_coordinates(ray, x_sphere, z_sphere)
+
+        # use equation-of-a-circle to determine intersect point
+        sphere_thickness_at_intersect = sqrt(radius**2 - x_sphere_r**2)
+        x_intersect_r = 0
+        z_intersect_r = z_sphere_r - sphere_thickness_at_intersect
+
+        # use first derivative of the equation-of-a-circle and snell's law to
+        # calculate the ray bending at the surface
+        theta1_r = atan(x_sphere_r/sqrt(radius**2 - x_sphere_r**2))
+        theta2_r = asin(self.n_surround/self.n_sphere*sin(theta1_r))
+
+        # convert back to standard coordinates
+        x_intersect, z_intersect = standard_coordinates(ray, x_intersect_r, z_intersect_r)
+        theta2 = ray.th + theta2_r
+
+        ray.x = x_intersect
+        ray.z += z_intersect
+        ray.th = theta2
         ray.save()
 
     def exit_sphere(self, ray):
@@ -45,8 +64,8 @@ class DielectricSphere(OpticalElement):
 
     def to_exit_plane(self, ray, z_final):
         distance = z_final - ray.z
-        ray.x = ray.x + math.tan(ray.th)*distance
-        ray.z += z_final
+        ray.x = ray.x + tan(ray.th)*distance
+        ray.z = z_final
         ray.save()
 
     def propagate(self, ray):
