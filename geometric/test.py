@@ -6,6 +6,7 @@ from pylab import *
 
 from base import *
 from standard import *
+from visualization import plot_traces
 
 class SpaceProp(unittest.TestCase):
     """
@@ -94,15 +95,7 @@ class Imaging(unittest.TestCase):
         simulation.setup.append(AllRays('rays'))
 
         report = simulation.run()
-        for ray in report['rays']['rays']:
-
-            num_locations = len(ray.locations)
-            x = empty(num_locations)
-            z = empty(num_locations)
-            for i, loc in enumerate(ray.locations):
-                x[i], z[i] = loc
-        
-            plot(z, x)
+        plot_traces(report['rays']['rays'])
         show()
 
 

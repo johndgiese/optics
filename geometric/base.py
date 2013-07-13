@@ -6,6 +6,9 @@ class Ray(object):
         self.z = z
         self.a = a
 
+    def save(self):
+        pass
+
 
 class Source(object):
 

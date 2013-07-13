@@ -13,24 +13,14 @@ class Trace(Ray):
 
     def __init__(self, *args, **kwargs):
         super(Trace, self).__init__(*args, **kwargs)
-        self.locations = [(self._x, self.z)]
+        self.locations = [(self.x, self.z)]
 
-    def _set_x(self, value):
-        self._x = value
-
-        try:
-            current = (self._x, self.z)
-            previous = self.locations[-1]
-        except:
-            return
+    def save(self):
+        current = (self.x, self.z)
+        previous = self.locations[-1]
 
         if previous != current:
             self.locations.append(current)
-
-    def _get_x(self):
-        return self._x
-
-    x = property(_get_x, _set_x)
 
 
 class Space(OpticalElement):
@@ -41,6 +31,7 @@ class Space(OpticalElement):
     def propagate(self, ray):
         ray.z += self.distance
         ray.x = ray.x + math.tan(ray.th)*self.distance
+        ray.save()
 
 
 class ParaxialSpace(OpticalElement):
@@ -51,6 +42,7 @@ class ParaxialSpace(OpticalElement):
     def propagate(self, ray):
         ray.z += self.distance
         ray.x = ray.x + ray.th*self.distance
+        ray.save()
 
 
 class ParaxialLens(OpticalElement):
@@ -60,6 +52,7 @@ class ParaxialLens(OpticalElement):
 
     def propagate(self, ray):
         ray.th = ray.th - ray.x/self.f
+        ray.save()
 
 
 class Aperture(OpticalElement):
@@ -76,6 +69,7 @@ class Aperture(OpticalElement):
     def propagate(self, ray):
         if ray.x < self.left or ray.x > self.right:
             ray.a = 0
+            ray.save()
 
 
 class AngleSpan(Source):
