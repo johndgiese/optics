@@ -19,36 +19,36 @@ class PartionedApertureLens(OpticalElement):
 
 class Bead(OpticalElement):
 
-    def __init__(self, radius, center, n_sphere, n_surround=1.0):
+    def __init__(self, radius, center, n_bead, n_surround=1.0):
         self.radius = radius
         self.center = center
-        self.n_sphere = n_sphere
+        self.n_bead = n_bead
         self.n_surround = n_surround
         self.dz = 2*radius
 
-    def intersect_sphere(self, ray):
-        x_sphere = self.center
-        z_sphere = self.radius
-        x_sphere_r, z_sphere_r = ray_coordinates(ray, x_sphere, z_sphere)
-        return abs(x_sphere_r) < self.radius
+    def intersect(self, ray):
+        x_bead = self.center
+        z_bead = self.radius
+        x_bead_r, z_bead_r = ray_coordinates(ray, x_bead, z_bead)
+        return abs(x_bead_r) < self.radius
 
-    def enter_sphere(self, ray):
+    def enter(self, ray):
         radius = self.radius
         
-        # calculate sphere center in ray-coordinates
-        x_sphere = self.center
-        z_sphere = self.radius
-        x_sphere_r, z_sphere_r = ray_coordinates(ray, x_sphere, z_sphere)
+        # calculate bead center in ray-coordinates
+        x_bead = self.center
+        z_bead = self.radius
+        x_bead_r, z_bead_r = ray_coordinates(ray, x_bead, z_bead)
 
         # use equation-of-a-circle to determine intersect point
-        sphere_thickness_at_intersect = sqrt(radius**2 - x_sphere_r**2)
+        bead_thickness_at_intersect = sqrt(radius**2 - x_bead_r**2)
         x_intersect_r = 0
-        z_intersect_r = z_sphere_r - sphere_thickness_at_intersect
+        z_intersect_r = z_bead_r - bead_thickness_at_intersect
 
         # use first derivative of the equation-of-a-circle and snell's law to
         # calculate the ray bending at the surface
-        theta1_r = atan(x_sphere_r/sqrt(radius**2 - x_sphere_r**2))
-        theta2_r = asin(self.n_surround/self.n_sphere*sin(theta1_r))
+        theta1_r = atan(x_bead_r/sqrt(radius**2 - x_bead_r**2))
+        theta2_r = asin(self.n_surround/self.n_bead*sin(theta1_r))
 
         # convert back to standard coordinates
         x_intersect, z_intersect = standard_coordinates(ray, x_intersect_r, z_intersect_r)
@@ -59,7 +59,7 @@ class Bead(OpticalElement):
         ray.th = theta2
         ray.save()
 
-    def exit_sphere(self, ray):
+    def exit(self, ray):
         ray.save()
 
     def to_exit_plane(self, ray, z_final):
@@ -70,7 +70,7 @@ class Bead(OpticalElement):
 
     def propagate(self, ray):
         z_final = ray.z + self.dz
-        if self.intersect_sphere(ray):
-            self.enter_sphere(ray)
-            self.exit_sphere(ray)
+        if self.intersect(ray):
+            self.enter(ray)
+            self.exit(ray)
         self.to_exit_plane(ray, z_final)
