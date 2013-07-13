@@ -95,25 +95,18 @@ class AngleSpan(Source):
 
 class RandomSource(Source):
 
-    def __init__(self, num_rays, x_dist, th_dist, **kwargs):
+    def __init__(self, num_rays, distribution, **kwargs):
         super(RandomSource, self).__init__(**kwargs)
         self.num_rays = num_rays
-        self.x_dist = x_dist
-        self.th_dist = th_dist
-        self.z_dist = kwargs.pop('z_dist', lambda: 0)
-        self.a_dist = kwargs.pop('a_dist', lambda: 1)
-
+        self.distribution = distribution
         self.count = 0
 
     def next(self):
         if self.count >= self.num_rays:
             raise StopIteration()
         self.count += 1
-
-        x = self.x_dist()
-        th = self.th_dist()
-        a = self.a_dist()
-        return self.Ray(x, th, a)
+        x, th = self.distribution()
+        return self.Ray(x, th, 0.0, 1.0)
 
 
 class AllRays(Detector):

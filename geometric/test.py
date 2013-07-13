@@ -18,9 +18,12 @@ class SpaceProp(unittest.TestCase):
     def setUp(self):
         th_span = math.pi*0.1
         num_photons = 1e4
-        th_dist = lambda: rand()*th_span - th_span/2.0
-        x_dist = lambda: 0
-        source = RandomSource(num_photons, x_dist, th_dist)
+
+        def distribution():
+            x = 0
+            th = rand()*th_span - th_span/2.0
+            return x, th
+        source = RandomSource(num_photons, distribution)
          
         max_photon_spread = math.tan(th_span/2.0)
         bin_edges = linspace(-2*max_photon_spread, 2*max_photon_spread, 100)
@@ -58,9 +61,12 @@ class Imaging(unittest.TestCase):
 
         th_span = math.pi*0.5
         num_photons = 1e4
-        th_dist = lambda: rand()*th_span - th_span/2.0
-        x_dist = lambda: 0
-        source = RandomSource(num_photons, x_dist, th_dist)
+        def distribution():
+            x = 0.0
+            th = rand()*th_span - th_span/2.0
+            return x, th
+
+        source = RandomSource(num_photons, distribution)
          
         x_bins = linspace(-0.3, 0.3, 101)
         d = 1
@@ -103,10 +109,13 @@ class Imaging(unittest.TestCase):
 class DielectricBead(unittest.TestCase):
 
     def setUp(self):
-        th_dist = lambda: rand()*pi - math.pi/2
-        x_dist = lambda: rand() - 0.5
+        def distribution():
+            x = rand() - 0.5
+            th = rand()*pi - math.pi/2
+            return x, th
+        
         num_photons = 10
-        source = RandomSource(num_photons, x_dist, th_dist, Ray=Trace)
+        source = RandomSource(num_photons, distribution, Ray=Trace)
 
         setup = [
             DielectricSphere(1, 0.2, 1.3),
