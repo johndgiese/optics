@@ -25,25 +25,33 @@ class DielectricSphere(OpticalElement):
         self.dz = 2*radius
 
     def intersect_sphere(self, ray):
-        x0 = self.center
-        y0 = self.radius
-        x1, y1 = util.to_ray_coordinates(ray, x0, y0)
-        return abs(x0) < radius
+        x = self.center
+        z = self.radius
+        x_r, z_r = util.to_ray_coordinates(ray, x, z)
+        return abs(x_r) < self.radius
 
     def enter_sphere(self, ray):
+        radius = self.radius
+        x = self.center
+        z = self.radius
+        x_r, z_r = util.to_ray_coordinates(ray, x, z)
+        sphere_thickness_at_intersect = sqrt(radius**2 - x_r**2)
+        xi_r = 0 # by definition
+        zi_r = z_r - sphere_thickness_at_intersect
         ray.save()
 
     def exit_sphere(self, ray):
         ray.save()
 
-    def to_exit_plane(self, ray):
+    def to_exit_plane(self, ray, z_final):
+        distance = z_final - ray.z
+        ray.x = ray.x + math.tan(ray.th)*distance
+        ray.z += z_final
         ray.save()
 
     def propagate(self, ray):
         z_final = ray.z + self.dz
-        if intersect_sphere(self, ray):
+        if self.intersect_sphere(ray):
             self.enter_sphere(ray)
             self.exit_sphere(ray)
         self.to_exit_plane(ray, z_final)
-
-

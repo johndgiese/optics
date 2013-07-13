@@ -6,6 +6,7 @@ from pylab import *
 
 from base import *
 from standard import *
+from extra import *
 from visualization import plot_traces
 
 class SpaceProp(unittest.TestCase):
@@ -95,6 +96,31 @@ class Imaging(unittest.TestCase):
         simulation.setup.append(AllRays('rays'))
 
         report = simulation.run()
+        plot_traces(report['rays']['rays'])
+        show()
+
+
+class DielectricBead(unittest.TestCase):
+
+    def setUp(self):
+        th_dist = lambda: rand()*pi - math.pi/2
+        x_dist = lambda: rand() - 0.5
+        num_photons = 10
+        source = RandomSource(num_photons, x_dist, th_dist, Ray=Trace)
+
+        setup = [
+            DielectricSphere(1, 0.2, 1.3),
+            Space(1),
+            AllRays('rays'),
+        ]
+        
+        self.num_photons = num_photons
+        self.simulation = Simulation(source, setup)
+
+    def test_tracing(self):
+        simulation = self.simulation
+        report = simulation.run()
+
         plot_traces(report['rays']['rays'])
         show()
 
