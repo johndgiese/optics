@@ -16,6 +16,9 @@ class PartionedApertureLens(OpticalElement):
             x_effective = ray.x + self.lens_separation
         ray.th = ray.th - x_effective/self.f
 
+    def dz(self):
+        return 0.0
+
 
 class Bead(OpticalElement):
 
@@ -24,7 +27,6 @@ class Bead(OpticalElement):
         self.center = center
         self.n_bead = n_bead
         self.n_surround = n_surround
-        self.dz = 2*radius
 
     def intersect(self, ray):
         x_bead = self.center
@@ -69,8 +71,11 @@ class Bead(OpticalElement):
         ray.save()
 
     def propagate(self, ray):
-        z_final = ray.z + self.dz
+        z_final = ray.z + self.dz()
         if self.intersect(ray):
             self.enter(ray)
             self.exit(ray)
         self.to_exit_plane(ray, z_final)
+
+    def dz(self):
+        return self.radius*2

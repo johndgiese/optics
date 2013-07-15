@@ -33,6 +33,9 @@ class Space(OpticalElement):
         ray.x = ray.x + math.tan(ray.th)*self.distance
         ray.save()
 
+    def dz(self):
+        return self.distance
+
 
 class ParaxialSpace(OpticalElement):
 
@@ -44,6 +47,9 @@ class ParaxialSpace(OpticalElement):
         ray.x = ray.x + ray.th*self.distance
         ray.save()
 
+    def dz(self):
+        return self.distance
+
 
 class ParaxialLens(OpticalElement):
 
@@ -53,6 +59,9 @@ class ParaxialLens(OpticalElement):
     def propagate(self, ray):
         ray.th = ray.th - ray.x/self.f
         ray.save()
+
+    def dz(self):
+        return 0.0
 
 
 class Aperture(OpticalElement):
@@ -70,6 +79,9 @@ class Aperture(OpticalElement):
         if ray.x < self.left or ray.x > self.right:
             ray.a = 0
             ray.save()
+
+    def dz(self):
+        return 0.0
 
 
 class AngleSpan(Source):
