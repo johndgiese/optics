@@ -105,6 +105,28 @@ class AngleSpan(Source):
         return self.Ray(x, th)
 
 
+class PositionSpan(Source):
+    
+    def __init__(self, num_rays, x_start, x_stop, **kwargs):
+        super(PositionSpan, self).__init__(**kwargs)
+        self.num_rays = num_rays
+        self.th = kwargs.pop('th', 0)
+        self.x_start = float(x_start)
+        self.x_stop = float(x_stop)
+
+        self.dx = abs(self.x_stop - self.x_start)/(self.num_rays - 1)
+        self.count = 0
+
+    def next(self):
+        if self.count >= self.num_rays:
+            raise StopIteration()
+        self.count += 1
+
+        x = (self.count - 1)*self.dx + self.x_start
+        th = self.th
+        return self.Ray(x, th)
+
+
 class RandomSource(Source):
 
     def __init__(self, num_rays, distribution, **kwargs):
