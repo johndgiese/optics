@@ -140,8 +140,8 @@ class BeadTest(unittest.TestCase):
 
         fig = figure()
         ax = gca()
-        bead_center = (bead.radius + self.pre_space, bead.center)
-        circle = Circle(bead_center, bead.radius, color='r', alpha=0.3)
+        bead_center = (bead.radius + self.pre_space, bead.x)
+        circle = Circle(bead_center, bead.radius, color='b', alpha=0.2)
         gca().add_patch(circle)
         plot_traces(report['rays']['rays'])
         axis('equal')
