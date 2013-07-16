@@ -31,7 +31,7 @@ class SpaceProp(unittest.TestCase):
         d = 1
         setup = [
             Space(d),
-            PositionHistogram('camera', bin_edges),
+            PositionDetector('camera', bin_edges),
         ]
 
         self.max_photon_spread = max_photon_spread
@@ -77,7 +77,7 @@ class Imaging(unittest.TestCase):
             ParaxialSpace(2*d),
             ParaxialLens(d),
             ParaxialSpace(d),
-            PositionAngleHistogram('camera', x_bins)
+            PositionAngleDetector('camera', x_bins)
         ]
 
         self.num_rays = num_rays
@@ -98,8 +98,8 @@ class Imaging(unittest.TestCase):
         simulation = self.simulation
 
         # modify the base setup a bit for this test
-        simulation.source = AngleSpan(5, Ray=Trace)
-        simulation.setup.append(AllRays('rays'))
+        simulation.source = AngleSpanSource(5, Ray=Trace)
+        simulation.setup.append(RayDetector('rays'))
 
         report = simulation.run()
         plot_traces(report['rays']['rays'])
@@ -117,7 +117,7 @@ class BeadTest(unittest.TestCase):
             #th = rand()*th_span - th_span/2.0
             #return x, th
         #source = RandomSource(num_rays, distribution, Ray=Trace)
-        source = PositionSpan(num_rays, -0.9, 0.9, Ray=Trace)
+        source = PositionSpanSource(num_rays, -0.9, 0.9, Ray=Trace)
 
         bead = Bead(1, 0, 1.3)
         pre_space = 0.1
@@ -126,7 +126,7 @@ class BeadTest(unittest.TestCase):
             Space(pre_space),
             bead,
             Space(post_space),
-            AllRays('rays'),
+            RayDetector('rays'),
         ]
         
         self.num_rays = num_rays

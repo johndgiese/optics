@@ -80,10 +80,10 @@ class Aperture(OpticalElement):
         return 0.0
 
 
-class AngleSpan(Source):
+class AngleSpanSource(Source):
     
     def __init__(self, num_rays, **kwargs):
-        super(AngleSpan, self).__init__(**kwargs)
+        super(AngleSpanSource, self).__init__(**kwargs)
         self.num_rays = num_rays
         self.x = kwargs.pop('x', 0)
         self.th_span = kwargs.pop('th_span', math.pi/2)
@@ -101,10 +101,10 @@ class AngleSpan(Source):
         return self.Ray(x, th)
 
 
-class PositionSpan(Source):
+class PositionSpanSource(Source):
     
     def __init__(self, num_rays, x_start, x_stop, **kwargs):
-        super(PositionSpan, self).__init__(**kwargs)
+        super(PositionSpanSource, self).__init__(**kwargs)
         self.num_rays = num_rays
         self.th = kwargs.pop('th', 0)
         self.x_start = float(x_start)
@@ -139,7 +139,7 @@ class RandomSource(Source):
         return self.Ray(x, th, 0.0, 1.0)
 
 
-class AllRays(Detector):
+class RayDetector(Detector):
 
     def __init__(self, name):
         self.name = name
@@ -154,7 +154,7 @@ class AllRays(Detector):
         return report
 
 
-class PositionHistogram(Detector):
+class PositionDetector(Detector):
 
     def __init__(self, name, x_bins):
         self.name = name
@@ -172,7 +172,7 @@ class PositionHistogram(Detector):
         return report
 
 
-class PositionAngleHistogram(Detector):
+class PositionAngleDetector(Detector):
 
     def __init__(self, name, x_bins, th_bins=100):
         self.name = name
