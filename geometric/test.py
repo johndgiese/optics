@@ -109,16 +109,17 @@ class Imaging(unittest.TestCase):
 class BeadTest(unittest.TestCase):
 
     def setUp(self):
-        num_rays = 10
+        num_rays = 5
 
-        th_span = pi*0.8
-        def distribution():
-            x = rand()*2 - 1
-            th = rand()*th_span - th_span/2.0
-            return x, th
-        source = RandomSource(num_rays, distribution, Ray=Trace)
+        #th_span = pi*0.8
+        #def distribution():
+            #x = rand()*2 - 1
+            #th = rand()*th_span - th_span/2.0
+            #return x, th
+        #source = RandomSource(num_rays, distribution, Ray=Trace)
+        source = PositionSpan(num_rays, -0.9, 0.9, Ray=Trace)
 
-        bead = Bead(1, 0.2, 1.3)
+        bead = Bead(1, 0, 1.3)
         pre_space = 0.1
         post_space = 0.1
         setup = [

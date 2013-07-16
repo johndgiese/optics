@@ -1,4 +1,6 @@
 import numpy as np
+from math import pi
+import math
 
 def digitize(x, bins):
     inds = np.digitize([x], bins)    
@@ -25,3 +27,16 @@ def standard_coordinates(ray, x, y):
     """
     x_new, y_new = rotate(x, y, -ray.th)
     return x_new + ray.x, y_new
+
+def quadrant_atan(y, x):
+    out = math.atan(abs(y/x))
+    if x < 0 :
+        if y > 0:
+            out = pi - out
+        else:
+            out = pi + out
+    else:
+        if y < 0:
+            out = 2*pi - out
+    return out
+
