@@ -119,9 +119,13 @@ class BeadTest(unittest.TestCase):
         #source = RandomSource(num_rays, distribution, Ray=Trace)
         source = PositionSpanSource(num_rays, -0.9, 0.9, Ray=Trace)
 
-        bead = Bead(1, 0, 1.3)
+        radius = 1.0
         pre_space = 0.1
         post_space = 0.1
+
+
+        bead = Bead(radius, 0, 1.3)
+
         setup = [
             Space(pre_space),
             bead,
@@ -132,7 +136,25 @@ class BeadTest(unittest.TestCase):
         self.num_rays = num_rays
         self.bead = bead
         self.pre_space = pre_space
+        self.post_space = post_space
         self.simulation = Simulation(source, setup)
+
+    def test_known_ray(self):
+        simulation = self.simulation
+        bead = self.bead
+
+        offset = bead.radius/10.0
+        source = SingleRaySource(offset, 0, Ray=Trace)
+        simulation.source = source
+
+        report = simulation.run()
+        locations = report['rays']['rays'][0].locations
+        self.assertEqual(locations[0], (offset, 0))
+        self.assertEqual(locations[1], (offset, self.pre_space))
+
+        z_i = self.pre_space + bead.radius - np.sqrt(bead.radius**2 - offset**2)
+        self.assertAlmostEqual(locations[2][0], offset)
+        self.assertAlmostEqual(locations[2][1], z_i)
 
     def test_tracing(self):
         simulation = self.simulation

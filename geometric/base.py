@@ -1,6 +1,6 @@
 class Ray(object):
 
-    def __init__(self, x, th, z=0, a=1):
+    def __init__(self, x, th, a=1.0, z=0.0):
         self.x = x
         self.th = th
         self.z = z
@@ -8,6 +8,10 @@ class Ray(object):
 
     def save(self):
         pass
+
+    def __unicode__(self):
+        return u'x: {}, z: {}, theta: {}, amplitude: {}'.format(
+                self.x, self.z, self.th, self.a )
 
 
 class Source(object):

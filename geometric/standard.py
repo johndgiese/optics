@@ -12,11 +12,7 @@ class Trace(Ray):
         self.locations = [(self.x, self.z)]
 
     def save(self):
-        current = (self.x, self.z)
-        previous = self.locations[-1]
-
-        if previous != current:
-            self.locations.append(current)
+        self.locations.append((self.x, self.z))
 
 
 class Space(OpticalElement):
@@ -80,6 +76,40 @@ class Aperture(OpticalElement):
         return 0.0
 
 
+class ConcreteSource(Source):
+
+    def __init__(self, x, th, a=None, **kwargs):
+        super(ConcreteSource, self).__init__(**kwargs)
+        self.x = x
+        self.th = th
+        if a:
+            self.a = a
+        else:
+            self.a = np.ones(len(x))
+
+        self.num_rays = len(x) # all inputs assumed same length
+        self.count = 0
+
+    def next(self):
+        if self.count >= self.num_rays:
+            raise StopIteration()
+
+        x = self.x[self.count]
+        th = self.th[self.count]
+        a = self.a[self.count]
+
+        ray = self.Ray(x, th, a=a)
+
+        self.count += 1
+        return ray
+
+
+class SingleRaySource(ConcreteSource):
+
+    def __init__(self, x, th, a=1.0, **kwargs):
+        super(SingleRaySource, self).__init__([x], [th], [a], **kwargs)
+    
+
 class AngleSpanSource(Source):
     
     def __init__(self, num_rays, **kwargs):
@@ -94,11 +124,13 @@ class AngleSpanSource(Source):
     def next(self):
         if self.count >= self.num_rays:
             raise StopIteration()
-        self.count += 1
 
         x = self.x
-        th = (self.count - 1)*self.dth - self.th_span/2.0
-        return self.Ray(x, th)
+        th = self.count*self.dth - self.th_span/2.0
+        ray = self.Ray(x, th)
+
+        self.count += 1
+        return ray
 
 
 class PositionSpanSource(Source):
@@ -116,11 +148,13 @@ class PositionSpanSource(Source):
     def next(self):
         if self.count >= self.num_rays:
             raise StopIteration()
-        self.count += 1
 
-        x = (self.count - 1)*self.dx + self.x_start
+        x = self.count*self.dx + self.x_start
         th = self.th
-        return self.Ray(x, th)
+        ray = self.Ray(x, th)
+
+        self.count += 1
+        return ray 
 
 
 class RandomSource(Source):
@@ -134,9 +168,12 @@ class RandomSource(Source):
     def next(self):
         if self.count >= self.num_rays:
             raise StopIteration()
-        self.count += 1
+
         x, th = self.distribution()
-        return self.Ray(x, th, 0.0, 1.0)
+        ray = self.Ray(x, th)
+
+        self.count += 1
+        return ray
 
 
 class RayDetector(Detector):
