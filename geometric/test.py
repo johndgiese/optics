@@ -139,33 +139,70 @@ class BeadTest(unittest.TestCase):
         self.post_space = post_space
         self.simulation = Simulation(source, setup)
 
+    def plot_bead(self):
+        bead = self.bead
+        fig = figure()
+        ax = gca()
+        bead_center = (bead.radius + self.pre_space, bead.x)
+        circle = Circle(bead_center, bead.radius, color='b', alpha=0.2)
+        gca().add_patch(circle)
+
     def test_known_ray(self):
         simulation = self.simulation
         bead = self.bead
 
-        offset = bead.radius/10.0
+        offset = bead.radius/2.0
         source = SingleRaySource(offset, 0, Ray=Trace)
         simulation.source = source
+        a = bead.radius
+
+        x_i = offset
+        z_i = self.pre_space + a - np.sqrt(a**2 - offset**2)
+
+        th_i = atan(x_i/a)
+        th_r = atan(bead.n_surround/bead.n_bead*sin(th_i))
+        pathlength_in_bead = 2*a*cos(th_r)
+
+        beta = th_i - th_r
+        x_e = x_i - pathlength_in_bead*sin(beta)
+        z_e = z_i + pathlength_in_bead*cos(beta)
+
+        x_theoretical = array([
+            offset, # starting place
+            offset, # hit first plane of the bead object
+            x_i,    # interset bead
+            x_e,    # exit bead
+                    # should add the last one here once I calculate it
+        ])
+
+        z_theoretical = array([
+            0,
+            self.pre_space,
+            z_i,
+            z_e,
+        ])
 
         report = simulation.run()
-        locations = report['rays']['rays'][0].locations
-        self.assertEqual(locations[0], (offset, 0))
-        self.assertEqual(locations[1], (offset, self.pre_space))
 
-        z_i = self.pre_space + bead.radius - np.sqrt(bead.radius**2 - offset**2)
-        self.assertAlmostEqual(locations[2][0], offset)
-        self.assertAlmostEqual(locations[2][1], z_i)
+        locations = report['rays']['rays'][0].locations
+
+        self.plot_bead()
+        plot_traces(report['rays']['rays'])
+        plot(z_theoretical, x_theoretical, 'r')
+        show()
+
+        self.assertEqual(locations[0], (x_theoretical[0], z_theoretical[0]))
+        self.assertEqual(locations[1], (x_theoretical[1], z_theoretical[1]))
+        self.assertEqual(locations[2], (x_theoretical[2], z_theoretical[2]))
+        self.assertEqual(locations[3], (x_theoretical[3], z_theoretical[3]))
+
 
     def test_tracing(self):
         simulation = self.simulation
         bead = self.bead
         report = simulation.run()
 
-        fig = figure()
-        ax = gca()
-        bead_center = (bead.radius + self.pre_space, bead.x)
-        circle = Circle(bead_center, bead.radius, color='b', alpha=0.2)
-        gca().add_patch(circle)
+        self.plot_bead()
         plot_traces(report['rays']['rays'])
         axis('equal')
         show()
