@@ -1,6 +1,6 @@
 class Ray(object):
 
-    def __init__(self, x, th, z=0, a=1):
+    def __init__(self, x, th, a=1.0, z=0.0):
         self.x = x
         self.th = th
         self.z = z
@@ -8,6 +8,10 @@ class Ray(object):
 
     def save(self):
         pass
+
+    def __unicode__(self):
+        return u'x: {}, z: {}, theta: {}, amplitude: {}'.format(
+                self.x, self.z, self.th, self.a )
 
 
 class Source(object):
@@ -27,6 +31,8 @@ class OpticalElement(object):
     def propagate(self, ray):
         raise NotImplementedError
 
+    def dz(self):
+        raise NotImplementedError
 
 class Detector(object):
 
@@ -53,12 +59,24 @@ class Simulation(object):
     def detectors(self):
         return [obj for obj in self.setup if isinstance(obj, Detector)]
 
+    @property
+    def optical_elements(self):
+        return [obj for obj in self.setup if isinstance(obj, OpticalElement)]
+
     def propagate(self, ray):
         for obj in self.setup:
             if isinstance(obj, Detector):
                 obj.detect(ray)
             if isinstance(obj, OpticalElement):
                 obj.propagate(ray)
+
+    def pre_process(self):
+        # calculate and attach absolute z-positions to optical elements
+        z = 0
+        for oe in self.optical_elements:
+            oe.z_front = z
+            z += oe.dz()
+            oe.z_back = z
 
     def post_process(self):
         for d in self.detectors:
@@ -71,6 +89,7 @@ class Simulation(object):
         return report
 
     def run(self):
+        self.pre_process()
         for ray in self.source:
             self.propagate(ray)
         self.post_process()

@@ -1,7 +1,3 @@
-__all__ = ['Trace', 'Space', 'ParaxialSpace', 'ParaxialLens', 'Aperture',
-    'AngleSpan', 'RandomSource', 'AllRays', 'PositionHistogram',
-    'PositionAngleHistogram']
-
 import math
 
 import numpy as np
@@ -16,11 +12,7 @@ class Trace(Ray):
         self.locations = [(self.x, self.z)]
 
     def save(self):
-        current = (self.x, self.z)
-        previous = self.locations[-1]
-
-        if previous != current:
-            self.locations.append(current)
+        self.locations.append((self.x, self.z))
 
 
 class Space(OpticalElement):
@@ -33,6 +25,9 @@ class Space(OpticalElement):
         ray.x = ray.x + math.tan(ray.th)*self.distance
         ray.save()
 
+    def dz(self):
+        return self.distance
+
 
 class ParaxialSpace(OpticalElement):
 
@@ -44,6 +39,9 @@ class ParaxialSpace(OpticalElement):
         ray.x = ray.x + ray.th*self.distance
         ray.save()
 
+    def dz(self):
+        return self.distance
+
 
 class ParaxialLens(OpticalElement):
 
@@ -53,6 +51,9 @@ class ParaxialLens(OpticalElement):
     def propagate(self, ray):
         ray.th = ray.th - ray.x/self.f
         ray.save()
+
+    def dz(self):
+        return 0.0
 
 
 class Aperture(OpticalElement):
@@ -71,11 +72,48 @@ class Aperture(OpticalElement):
             ray.a = 0
             ray.save()
 
+    def dz(self):
+        return 0.0
 
-class AngleSpan(Source):
+
+class ConcreteSource(Source):
+
+    def __init__(self, x, th, a=None, **kwargs):
+        super(ConcreteSource, self).__init__(**kwargs)
+        self.x = x
+        self.th = th
+        if a:
+            self.a = a
+        else:
+            self.a = np.ones(len(x))
+
+        self.num_rays = len(x) # all inputs assumed same length
+        self.count = 0
+
+    def next(self):
+        if self.count >= self.num_rays:
+            raise StopIteration()
+
+        x = self.x[self.count]
+        th = self.th[self.count]
+        a = self.a[self.count]
+
+        ray = self.Ray(x, th, a=a)
+
+        self.count += 1
+        return ray
+
+
+class SingleRaySource(ConcreteSource):
+
+    def __init__(self, x, th, a=1.0, **kwargs):
+        super(SingleRaySource, self).__init__([x], [th], [a], **kwargs)
+    
+
+class AngleSpanSource(Source):
     
     def __init__(self, num_rays, **kwargs):
-        super(AngleSpan, self).__init__(**kwargs)
+        super(AngleSpanSource, self).__init__(**kwargs)
         self.num_rays = num_rays
         self.x = kwargs.pop('x', 0)
         self.th_span = kwargs.pop('th_span', math.pi/2)
@@ -86,11 +124,37 @@ class AngleSpan(Source):
     def next(self):
         if self.count >= self.num_rays:
             raise StopIteration()
-        self.count += 1
 
         x = self.x
-        th = (self.count - 1)*self.dth - self.th_span/2.0
-        return self.Ray(x, th)
+        th = self.count*self.dth - self.th_span/2.0
+        ray = self.Ray(x, th)
+
+        self.count += 1
+        return ray
+
+
+class PositionSpanSource(Source):
+    
+    def __init__(self, num_rays, x_start, x_stop, **kwargs):
+        super(PositionSpanSource, self).__init__(**kwargs)
+        self.num_rays = num_rays
+        self.th = kwargs.pop('th', 0)
+        self.x_start = float(x_start)
+        self.x_stop = float(x_stop)
+
+        self.dx = abs(self.x_stop - self.x_start)/(self.num_rays - 1)
+        self.count = 0
+
+    def next(self):
+        if self.count >= self.num_rays:
+            raise StopIteration()
+
+        x = self.count*self.dx + self.x_start
+        th = self.th
+        ray = self.Ray(x, th)
+
+        self.count += 1
+        return ray 
 
 
 class RandomSource(Source):
@@ -104,12 +168,15 @@ class RandomSource(Source):
     def next(self):
         if self.count >= self.num_rays:
             raise StopIteration()
-        self.count += 1
+
         x, th = self.distribution()
-        return self.Ray(x, th, 0.0, 1.0)
+        ray = self.Ray(x, th)
+
+        self.count += 1
+        return ray
 
 
-class AllRays(Detector):
+class RayDetector(Detector):
 
     def __init__(self, name):
         self.name = name
@@ -124,7 +191,7 @@ class AllRays(Detector):
         return report
 
 
-class PositionHistogram(Detector):
+class PositionDetector(Detector):
 
     def __init__(self, name, x_bins):
         self.name = name
@@ -142,7 +209,7 @@ class PositionHistogram(Detector):
         return report
 
 
-class PositionAngleHistogram(Detector):
+class PositionAngleDetector(Detector):
 
     def __init__(self, name, x_bins, th_bins=100):
         self.name = name

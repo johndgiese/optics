@@ -9,4 +9,4 @@ def plot_traces(traces):
         z = pylab.empty(num_locations)
         for i, loc in enumerate(t.locations):
             x[i], z[i] = loc
-        pylab.plot(z, x)
+        pylab.plot(z, x, 'k-')
