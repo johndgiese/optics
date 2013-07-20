@@ -1,3 +1,38 @@
+
+class PropagationException(Exception):
+
+    def __init__(self, ray):
+        Exception.__init__(self)
+        self.ray = ray
+
+
+class AbsorbedRay(PropagationException):
+    """
+    A ray is absorbed, and no longer propagates.
+
+    For example, a ray is blocked by an aperture.
+    """
+
+
+class EscapedRay(PropagationException):
+    """
+    A ray escapes an optical component out to the side.
+
+    For example, a ray traveling on the z-axis is reflected at 45 degrees, and
+    propagates indefinitely to the side while never reaching the next component
+    in the simulation.
+    """
+
+
+class TrappedRay(PropagationException):
+    """
+    A ray is trapped in an optical component.
+
+    For example, a ray is trapped in a resonator for longer than the simulation
+    wants to handle.
+    """
+
+
 class Ray(object):
 
     def __init__(self, x, th, a=1.0, z=0.0):
@@ -34,6 +69,7 @@ class OpticalElement(object):
     def dz(self):
         raise NotImplementedError
 
+
 class Detector(object):
 
     def __init__(self, name, *args, **kwargs):
@@ -63,13 +99,6 @@ class Simulation(object):
     def optical_elements(self):
         return [obj for obj in self.setup if isinstance(obj, OpticalElement)]
 
-    def propagate(self, ray):
-        for obj in self.setup:
-            if isinstance(obj, Detector):
-                obj.detect(ray)
-            if isinstance(obj, OpticalElement):
-                obj.propagate(ray)
-
     def pre_process(self):
         # calculate and attach absolute z-positions to optical elements
         z = 0
@@ -77,6 +106,31 @@ class Simulation(object):
             oe.z_front = z
             z += oe.dz()
             oe.z_back = z
+
+    def propagate(self, ray):
+        try:
+            for obj in self.setup:
+                if isinstance(obj, Detector):
+                    obj.detect(ray)
+                if isinstance(obj, OpticalElement):
+                    obj.propagate(ray)
+        except AbsorbedRay as e:
+            self.handle_absorbed_ray(e.ray)
+        except EscapedRay as e:
+            self.handle_escaped_ray(e.ray)
+        except TrappedRay as e:
+            self.handle_trapped_ray(e.ray)
+        except PropagationException as e:
+            pass
+
+    def handle_absorbed_ray(ray):
+        pass
+
+    def handle_escaped_ray(ray):
+        pass
+
+    def handle_trapped_ray(ray):
+        pass
 
     def post_process(self):
         for d in self.detectors:

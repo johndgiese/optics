@@ -69,8 +69,9 @@ class Aperture(OpticalElement):
 
     def propagate(self, ray):
         if ray.x < self.left or ray.x > self.right:
-            ray.a = 0
             ray.save()
+            raise AbsorbedRay(ray)
+
 
     def dz(self):
         return 0.0

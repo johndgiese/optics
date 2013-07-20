@@ -9,6 +9,9 @@ from standard import *
 from extra import *
 from visualization import plot_traces
 
+
+PLOTTING = False
+
 class SpaceProp(unittest.TestCase):
     """
     Test photons leaving from a small angular spread on the origin, and
@@ -94,6 +97,7 @@ class Imaging(unittest.TestCase):
         photons_in_central_bin = sum(data[central_bin, :])
         self.assertEqual(photons_in_central_bin, self.num_rays)
 
+    @unittest.skipIf(not PLOTTING, 'not plotting')
     def test_tracing(self):
         simulation = self.simulation
 
@@ -106,6 +110,7 @@ class Imaging(unittest.TestCase):
         show()
 
 
+@unittest.skip("Not done implimenting")
 class BeadTest(unittest.TestCase):
 
     def setUp(self):
@@ -186,10 +191,11 @@ class BeadTest(unittest.TestCase):
 
         locations = report['rays']['rays'][0].locations
 
-        self.plot_bead()
-        plot_traces(report['rays']['rays'])
-        plot(z_theoretical, x_theoretical, 'r')
-        show()
+        if PLOTTING:
+            self.plot_bead()
+            plot_traces(report['rays']['rays'])
+            plot(z_theoretical, x_theoretical, 'r')
+            show()
 
         self.assertEqual(locations[0], (x_theoretical[0], z_theoretical[0]))
         self.assertEqual(locations[1], (x_theoretical[1], z_theoretical[1]))
@@ -197,6 +203,7 @@ class BeadTest(unittest.TestCase):
         self.assertEqual(locations[3], (x_theoretical[3], z_theoretical[3]))
 
 
+    @unittest.skipIf(not PLOTTING, 'not plotting')
     def test_tracing(self):
         simulation = self.simulation
         bead = self.bead
@@ -206,6 +213,17 @@ class BeadTest(unittest.TestCase):
         plot_traces(report['rays']['rays'])
         axis('equal')
         show()
+
+class ApertureTest(unittest.TestCase):
+
+    def setUp(self):
+        self.centered_aperture = Aperture(1)
+        self.offset_aperture = Aperture(1, 2)
+
+    def test_absorption(self):
+        ray = Ray(x=0, th=0)
+
+        self.assertRaises(AbsorbedRay, self.offset_aperture.propagate, ray)
 
 
 if __name__ == '__main__':
