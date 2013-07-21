@@ -40,6 +40,7 @@ class Ray(object):
         self.th = th
         self.z = z
         self.a = a
+        self.children = []
 
     def save(self):
         pass
@@ -122,6 +123,9 @@ class Simulation(object):
             self.handle_trapped_ray(e.ray)
         except PropagationException as e:
             pass
+
+        for child_ray in ray.children:
+            self.propagate(child_ray)
 
     def handle_absorbed_ray(ray):
         pass
