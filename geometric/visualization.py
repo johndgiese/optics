@@ -2,11 +2,11 @@ import pylab
 
 from base import Ray
 
-def plot_traces(traces):
+def plot_traces(traces, linecolor='k'):
     for t in traces:
         num_locations = len(t.locations)
         x = pylab.empty(num_locations)
         z = pylab.empty(num_locations)
         for i, loc in enumerate(t.locations):
             x[i], z[i] = loc
-        pylab.plot(z, x, 'k-')
+        pylab.plot(z, x, color=linecolor)
