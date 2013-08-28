@@ -52,8 +52,8 @@ class Ray(object):
 
 class Source(object):
 
-    def __init__(self, Ray=Ray):
-        self.Ray = Ray
+    def __init__(self, **kwargs):
+        self.Ray = kwargs.pop('Ray', Ray)
 
     def __iter__(self):
         return self
@@ -127,13 +127,13 @@ class Simulation(object):
         for child_ray in ray.children:
             self.propagate(child_ray)
 
-    def handle_absorbed_ray(ray):
+    def handle_absorbed_ray(self, ray):
         pass
 
-    def handle_escaped_ray(ray):
+    def handle_escaped_ray(self, ray):
         pass
 
-    def handle_trapped_ray(ray):
+    def handle_trapped_ray(self, ray):
         pass
 
     def post_process(self):
