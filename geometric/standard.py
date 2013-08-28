@@ -46,6 +46,8 @@ class ParaxialSpace(OpticalElement):
 class ParaxialLens(OpticalElement):
 
     def __init__(self, f):
+        if f == 0:
+            raise ValueError("Can not have a focal length of zero.")
         self.f = f
 
     def propagate(self, ray):
